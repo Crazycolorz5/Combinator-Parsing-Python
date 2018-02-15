@@ -83,6 +83,7 @@ kleeneStar = lambda parser: kleeneStarThen(parser, emptyParse).fmap(lambda x: x[
 emptyParse = Parser.ret(())
 failParse = Parser(lambda x: None)
 parseAnyElem = Parser(lambda x: None if len(x) == 0 else (x[1:], x[0]))
-parseElem = lambda c: parseAnyElem.bind(
-    lambda e: Parser.guard(e == c).bind_(
-    Parser.ret(e)))
+parseElemPred = lambda predicate: parseAnyElem.bind(
+    lambda e: Parser.guard(predicate(e)).bind_(
+              Parser.ret(e)))
+parseElem = lambda c: parseElemPred(lambda e: e==c)
