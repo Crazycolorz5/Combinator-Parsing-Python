@@ -54,14 +54,7 @@ def sumParser(parser1, parser2):
     return Parser(sumTryParse)
 
 def prodParser(parser1, parser2):
-    def prodTryParse(inStream):
-        res1 = parser1.tryParse(inStream)
-        if res1 is None:
-            return None
-        else:
-            res2 = parser2.tryParse(res1[0])
-            return (res2[0], (res1[1], res2[1]))
-    return Parser(prodTryParse)
+    return parser1.bind(lambda res1: parser2.bind(lambda res2: Parser.ret((res1, res2))))
         
 # Parses as many of its input as possible that still allow the next parser to parse.
 def kleeneStarThen(parser, thenParser):
