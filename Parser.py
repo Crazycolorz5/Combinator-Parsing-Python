@@ -25,7 +25,7 @@ class Parser:
 
     def fmap(self, func):
         def fmapTryParse(inStream):
-            x = self.tryParse
+            x = self.tryParse(inStream)
             if x is None:
                 return None
             else:
@@ -60,19 +60,24 @@ def prodParser(parser1, parser2):
             return (res2[0], (res1[1], res2[1]))
     return Parser(prodTryParse)
         
-# Greedy Kleene star. Parses as many of its input as possible before returning.
-def kleeneStar(parser):
+# Parses as many of its input as possible that still allow the next parser to parse.
+def kleeneStarThen(parser, thenParser):
+    innerThenParser = thenParser.fmap(lambda x: ((), x))
     def kleeneTryParse(inStream):
+        print(inStream)
         res = parser.tryParse(inStream)
         if res is None:
-            return (inStream, ())
+            return innerThenParser.tryParse(inStream)
         else:
             res_inner = kleeneTryParse(res[0])
             if res_inner is None:
-                return (res[0], (res[1],))
+                return innerThenParser.tryParse(inStream)
             else:
-                return (res_inner[0], (res[1],) + res_inner[1])
+                (kleenePart, thenPart) = res_inner[1]
+                return (res_inner[0], ((res[1],) + kleenePart, thenPart))
     return Parser(kleeneTryParse)
+
+kleeneStar = lambda parser: kleeneStarThen(parser, emptyParse).fmap(lambda x: x[0])
 
 # Some basic building blocks
 emptyParse = Parser.ret(())
