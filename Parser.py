@@ -10,6 +10,9 @@ class Parser:
             return None
         else:
             return res[1]
+        
+    def __call__(self, inStream):
+        return self.parse(inStream)
     
     def bind(self, parserFunc):
         def bindTryParse(a):
