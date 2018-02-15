@@ -57,21 +57,13 @@ def prodParser(parser1, parser2):
     return parser1.bind(lambda res1: parser2.bind(lambda res2: Parser.ret((res1, res2))))
         
 # Parses as many of its input as possible that still allow the next parser to parse.
-def kleeneStarThen(parser, thenParser):
-    innerThenParser = thenParser.fmap(lambda x: ((), x))
-    def kleeneTryParse(inStream):
-        print(inStream)
-        res = parser.tryParse(inStream)
-        if res is None:
-            return innerThenParser.tryParse(inStream)
-        else:
-            res_inner = kleeneTryParse(res[0])
-            if res_inner is None:
-                return innerThenParser.tryParse(inStream)
-            else:
-                (kleenePart, thenPart) = res_inner[1]
-                return (res_inner[0], ((res[1],) + kleenePart, thenPart))
-    return Parser(kleeneTryParse)
+kleeneStarThen = lambda parser, thenParser: \
+    sumParser(
+        parser.bind(lambda res: #this lambda provides necessary laziness
+        kleeneStarThen(parser, thenParser).bind(lambda innerRes:
+        Parser.ret(((res,) + innerRes[0], innerRes[1])))),
+        
+        thenParser.fmap(lambda res: ((), res)))
 
 kleeneStar = lambda parser: kleeneStarThen(parser, emptyParse).fmap(lambda x: x[0])
 
