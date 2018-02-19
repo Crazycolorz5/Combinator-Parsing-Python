@@ -25,6 +25,9 @@ class Parser:
     
     def bind_(self, parser):
         return self.bind(lambda x: parser)
+    
+    def followedBy(self, parser):
+        return self.bind(lambda val: parser.bind_(Parser.ret(val)))
 
     def fmap(self, func):
         def fmapTryParse(inStream):
@@ -75,3 +78,4 @@ parseElemPred = lambda predicate: parseAnyElem.bind(
     lambda e: Parser.guard(predicate(e)).bind_(
               Parser.ret(e)))
 parseElem = lambda c: parseElemPred(lambda e: e==c)
+optional = lambda p: sumParser(p, emptyParse)
