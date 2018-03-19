@@ -79,3 +79,4 @@ parseElemPred = lambda predicate: parseAnyElem.bind(
               Parser.ret(e)))
 parseElem = lambda c: parseElemPred(lambda e: e==c)
 optional = lambda p: sumParser(p, emptyParse)
+parseEOS = Parser(lambda x: (x, ()) if len(x) == 0 else None)
